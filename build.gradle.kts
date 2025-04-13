@@ -23,17 +23,20 @@ defaultTasks("shadowJar")
 group = "io.tebex"
 version = "2.2.1"
 
-tasks.register("processSources", Copy::class.java) {
+val processedSourcesDir = layout.buildDirectory.dir("processedSources")
+
+val processSources by tasks.registering(Copy::class) {
     val props = mapOf("@VERSION@" to rootProject.version)
     from("src/main/java")
-    into("${layout.buildDirectory}/processedSources") // Destination for processed sources
+    into(processedSourcesDir)
     filteringCharset = "UTF-8"
     expand(props)
+    outputs.dir(processedSourcesDir)
 }
 
-tasks.withType<JavaCompile> {
-    dependsOn("processSources")
-    source = fileTree("${layout.buildDirectory}/processedSources")
+tasks.withType<JavaCompile>().configureEach {
+    dependsOn(processSources)
+    source(processedSourcesDir)
 }
 
 subprojects {
@@ -86,50 +89,6 @@ subprojects {
 
         filesNotMatching("**/*.zip") {
             expand(props)
-        }
-    }
-}
-
-val fabric1204Project = project(":fabric-1.20.4")
-fabric1204Project.configure<JavaPluginExtension> {
-    sourceSets {
-        getByName("main") {
-            java {
-                srcDir("src/main/kotlin")
-            }
-        }
-    }
-}
-
-val fabric1201Project = project(":fabric-1.20.1")
-fabric1201Project.configure<JavaPluginExtension> {
-    sourceSets {
-        getByName("main") {
-            java {
-                srcDir("src/main/kotlin")
-            }
-        }
-    }
-}
-
-val fabric1211Project = project(":fabric-1.21.1")
-fabric1211Project.configure<JavaPluginExtension> {
-    sourceSets {
-        getByName("main") {
-            java {
-                srcDir("src/main/kotlin")
-            }
-        }
-    }
-}
-
-val fabric1214Project = project(":fabric-1.21.4")
-fabric1214Project.configure<JavaPluginExtension> {
-    sourceSets {
-        getByName("main") {
-            java {
-                srcDir("src/main/kotlin")
-            }
         }
     }
 }

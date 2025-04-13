@@ -2,6 +2,8 @@ package io.tebex.plugin;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.xyrisdev.library.scheduler.XScheduler;
+import com.xyrisdev.library.scheduler.scheduling.schedulers.TaskScheduler;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import io.tebex.plugin.command.BuyCommand;
 import io.tebex.plugin.event.InventoryClickListener;
@@ -21,7 +23,6 @@ import io.tebex.sdk.platform.PlatformType;
 import io.tebex.sdk.platform.config.ServerPlatformConfig;
 import io.tebex.sdk.request.response.ServerInformation;
 import io.tebex.sdk.util.CommandResult;
-import io.tebex.sdk.util.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandException;
@@ -59,6 +60,10 @@ public final class TebexPlugin extends JavaPlugin implements Platform {
     private List<ServerEvent> serverEvents;
     public BuyGUI buyGUI;
 
+    // Folia support - begin
+    private static TaskScheduler scheulder;
+    // Folia support - end
+
     /**
      * Starts the Bukkit platform.
      */
@@ -66,6 +71,10 @@ public final class TebexPlugin extends JavaPlugin implements Platform {
     public void onEnable() {
         // Bind SDK.
         Tebex.init(this);
+
+        // Folia support - begin
+        scheulder = XScheduler.of(this);
+        // Folia support - end
 
         try {
             // Load the platform config file.
@@ -102,14 +111,17 @@ public final class TebexPlugin extends JavaPlugin implements Platform {
         registerEvents(new JoinListener(this));
         registerEvents(new InventoryClickListener());
 
-        getServer().getScheduler().runTaskTimerAsynchronously(this, this::refreshListings, 0, 20 * 60 * 5);
+//        getServer().getScheduler().runTaskTimerAsynchronously(this, this::refreshListings, 0, 20 * 60 * 5);
+        scheulder.runTaskTimerAsynchronously(this::refreshListings, 0, 20 * 60 * 5);
 
         // every 10 minutes clear the plugin event queue
-        getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+//        getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+        scheulder.runTaskTimerAsynchronously(() -> {
             this.getSDK().sendPluginEvents();
         }, 0, 60 * 20 * 10);
 
-        getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+//        getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+        scheulder.runTaskTimerAsynchronously(() -> {
             List<ServerEvent> runEvents = Lists.newArrayList(serverEvents.subList(0, Math.min(serverEvents.size(), 750)));
             if (runEvents.isEmpty()) return;
             if (!this.isSetup()) return;
@@ -318,28 +330,32 @@ public final class TebexPlugin extends JavaPlugin implements Platform {
     public void executeAsync(Runnable runnable) {
         if (!isEnabled()) return;
 
-        getServer().getScheduler().runTaskAsynchronously(this, runnable);
+//        getServer().getScheduler().runTaskAsynchronously(this, runnable);
+        scheulder.runTaskAsynchronously(runnable);
     }
 
     @Override
     public void executeAsyncLater(Runnable runnable, long time, TimeUnit unit) {
         if (!isEnabled()) return;
 
-        getServer().getScheduler().runTaskLaterAsynchronously(this, runnable, unit.toMillis(time) / 50);
+//        getServer().getScheduler().runTaskLaterAsynchronously(this, runnable, unit.toMillis(time) / 50);
+        scheulder.runTaskLaterAsynchronously(runnable, unit.toMillis(time) / 50);
     }
 
     @Override
     public void executeBlocking(Runnable runnable) {
         if (!isEnabled()) return;
 
-        getServer().getScheduler().runTask(this, runnable);
+//        getServer().getScheduler().runTask(this, runnable);
+        scheulder.runTask(runnable);
     }
 
     @Override
     public void executeBlockingLater(Runnable runnable, long time, TimeUnit unit) {
         if (!isEnabled()) return;
 
-        getServer().getScheduler().runTaskLater(this, runnable, unit.toMillis(time) / 50);
+//        getServer().getScheduler().runTaskLater(this, runnable, unit.toMillis(time) / 50);
+        scheulder.runTaskLater(runnable, unit.toMillis(time) / 50);
     }
 
     public Player getPlayer(Object player) {
