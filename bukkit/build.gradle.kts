@@ -6,6 +6,7 @@ version = rootProject.version
 dependencies {
     implementation(project(":sdk"))
     implementation("com.github.cryptomorin:XSeries:9.3.1") { isTransitive = false }
+    implementation("com.xyrisdev:scheduler:1.0")
     compileOnly("org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT")
     compileOnly("dev.dejvokep:boosted-yaml:1.3")
 }
@@ -20,5 +21,6 @@ tasks.named("shadowJar", ShadowJar::class.java) {
     relocate("kotlin", "io.tebex.plugin.libs.kotlin")
     relocate("com.google.gson", "io.tebex.plugin.libs.gson")
     relocate("com.cryptomorin.xseries", "io.tebex.plugin.libs.xseries")
+    relocate("com.xyrisdev.library.scheduler", "io.tebex.plugin.libs.scheduler")
     minimize()
 }

@@ -40,13 +40,14 @@ subprojects {
     plugins.apply("java")
     plugins.apply("com.gradleup.shadow")
     java {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(8))
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
-    tasks.named("shadowJar", ShadowJar::class.java) {
-        archiveFileName.set("tebex-${project.name}-${rootProject.version}-${gitCommitHash()}.jar")
+    tasks.named<ShadowJar>("shadowJar") {
+        val suffix = if (project.name == "bukkit") "-Folia" else ""
+        archiveFileName.set("tebex-${project.name}-${rootProject.version}-${gitCommitHash()}$suffix.jar")
     }
 
     repositories {
@@ -71,6 +72,9 @@ subprojects {
         }
         maven("https://maven.nucleoid.xyz/") {
             name = "nucleoid"
+        }
+        maven("https://repo.xyrisdev.com/repository/maven-public") {
+            name = "xyris-repo"
         }
     }
 
